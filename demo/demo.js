@@ -14,37 +14,42 @@ function nextAgent () {
     let agentName = availableAgents.pop()
     if (!agentName) return;
 
-    clippy.load(agentName, agent => {
-        window[agentName] = agent
+    clippy.load(
+        agentName, 
+        agent => {
+            window[agentName] = agent
 
-        const move = () => {
-            agent.moveTo($(document).width() * randPos(), $(document).height() * randPos())
-        }
+            const move = () => {
+                agent.moveTo($(document).width() * randPos(), $(document).height() * randPos())
+            }
 
-        move()
+            move();
 
-        agent.show();
+            agent.show();
 
-        // Speak on click and start
-        const speak = () => {
-            agent.speak('I am ' + agentName + ', ' + talks[~~(Math.random() * talks.length)])
-            agent.animate()
-        }
-        $(agent._el).click(() => speak())
-        speak()
+            // Speak on click and start
+            const speak = () => {
+                agent.speak('I am ' + agentName + ', ' + talks[~~(Math.random() * talks.length)])
+                agent.animate()
+            }
+            $(agent._el).click(() => speak())
+            speak()
 
-        // Animate randomly
-        setInterval(() => {
-            agent.animate()
-        }, 3000 + (Math.random() * 4000))
+            // Animate randomly
+            setInterval(() => {
+                agent.animate()
+            }, 3000 + (Math.random() * 4000))
 
-        // Move randomly
-        setInterval(() => {
-            move()
-        }, 3000 + (Math.random() * 4000))
+            // Move randomly
+            setInterval(() => {
+                move()
+            }, 3000 + (Math.random() * 4000))
 
-        setTimeout(nextAgent, 2000)
-    });
+            setTimeout(nextAgent, 2000)
+        }, 
+        null, 
+        '../assets/agents/'
+    );
 }
 
-nextAgent()
+nextAgent();

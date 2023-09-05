@@ -5,6 +5,10 @@ var Queue = function Queue (onEmptyCallback) {
     this._onEmptyCallback = onEmptyCallback;
 };
 
+Queue.prototype.size = function size () {
+    return this._queue.length;
+};
+
 /***
  *
  * @param {function(Function)} func
@@ -19,19 +23,18 @@ Queue.prototype.queue = function queue (func) {
 };
 
 Queue.prototype._progressQueue = function _progressQueue () {
-
     // stop if nothing left in queue
     if (!this._queue.length) {
         this._onEmptyCallback();
         return;
     }
 
-    var f = this._queue.shift();
+    var callback = this._queue.shift();
     this._active = true;
 
     // execute function
     var completeFunction = $.proxy(this.next, this);
-    f(completeFunction);
+    callback(completeFunction);
 };
 
 Queue.prototype.clear = function clear () {
@@ -436,20 +439,30 @@ var Agent = function Agent (path,data,sounds) {
     this._balloon = new Balloon(this._el);
 
     this._setupEvents();
+
+    // this._listeners = {};
 };
+
+Agent.prototype.queueSize = function queueSize () {
+    return this._queue.size();
+};
+
+// on (eventName, callback) {
+// this._listeners[eventName] = callback;
+// }
 
 /***
  *
  * @param {Number} x
  * @param {Number} y
  */
-Agent.prototype.gestureAt = function gestureAt (x, y) {
+Agent.prototype.gestureAt = function gestureAt (x, y, callback) {
     var d = this._getDirection(x, y);
     var gAnim = 'Gesture' + d;
     var lookAnim = 'Look' + d;
 
     var animation = this.hasAnimation(gAnim) ? gAnim : lookAnim;
-    return this.play(animation);
+    return this.play(animation, callback);
 };
 
 /***
@@ -528,7 +541,7 @@ Agent.prototype._playInternal = function _playInternal (animation, callback) {
     this._animator.showAnimation(animation, callback);
 };
 
-Agent.prototype.play = function play (animation, timeout, cb) {
+Agent.prototype.play = function play (animation, timeout, callback) {
     if (!this.hasAnimation(animation)) { return false; }
 
     if (timeout === undefined) { timeout = 5000; }
@@ -540,7 +553,7 @@ Agent.prototype.play = function play (animation, timeout, cb) {
         var callback = function (name, state) {
             if (state === Animator.States.EXITED) {
                 completed = true;
-                if (cb) { cb(); }
+                callback && callback();
                 complete();
             }
         };
@@ -869,9 +882,6 @@ Agent.prototype.resume = function resume () {
 };
 
 var load = function load (name, successCb, failCb, base_path) {
-    //.BEGIN HACK
-    base_path = 'assets/agents/';
-    //.END HACK
     base_path = base_path || window.CLIPPY_CDN || 'https://gitcdn.xyz/repo/pi0/clippyjs/master/assets/agents/';
 
     var path = base_path + name;
@@ -997,6 +1007,9 @@ var clippy = {
     ready: ready,
     soundsReady: soundsReady
 };
+
+// List of available agents
+clippy.agents = ['Bonzi', 'Clippy', 'F1', 'Genie', 'Genius', 'Links', 'Merlin', 'Peedy', 'Rocky', 'Rover'];
 
 if (typeof window !== 'undefined') {
     window.clippy = clippy;
