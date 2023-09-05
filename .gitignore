@@ -1,5 +1,5 @@
 .idea
 *.iml
 *.log*
-/dist
+
 node_modules
