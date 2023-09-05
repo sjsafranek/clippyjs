@@ -2,8 +2,11 @@ import $ from 'jquery'
 import Agent from './agent'
 
 export class load {
-    constructor (name, successCb, failCb, base_path) {
-        base_path = base_path || window.CLIPPY_CDN || 'https://gitcdn.xyz/repo/pi0/clippyjs/master/assets/agents/';
+
+    constructor (name, onSuccess, onFail, base_path) {
+        //base_path = base_path || window.CLIPPY_CDN || 'https://gitcdn.xyz/repo/pi0/clippyjs/master/assets/agents/';
+        //base_path = "assets/agents/";
+        base_path = base_path || '../dist/assets/agents/';
 
         let path = base_path + name;
         let mapDfd = load._loadMap(path);
@@ -22,12 +25,12 @@ export class load {
         });
 
         // wrapper to the success callback
-        let cb = function () {
+        let _onSuccess = function () {
             let a = new Agent(path, data, sounds);
-            successCb(a);
+            onSuccess(a);
         };
 
-        $.when(mapDfd, agentDfd, soundsDfd).done(cb).fail(failCb);
+        $.when(mapDfd, agentDfd, soundsDfd).done(_onSuccess).fail(onFail);
     }
 
     static _loadMap (path) {

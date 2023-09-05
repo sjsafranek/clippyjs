@@ -1,10 +1,9 @@
 const fs = require('fs');
 const path = require('path');
-const buble = require('rollup-plugin-buble');
-const resolve = require('rollup-plugin-node-resolve');
-const commonjs = require('rollup-plugin-commonjs');
-const uglify = require('rollup-plugin-uglify');
-// const { minify } = require('uglify-js-harmony');
+//const buble = require('rollup-plugin-buble');
+const resolve = require('@rollup/plugin-node-resolve');
+const commonjs = require('@rollup/plugin-commonjs');
+const copy = require('rollup-plugin-copy-assets');
 const { dependencies } = require('./package.json');
 
 const name = 'clippy'
@@ -16,29 +15,20 @@ if (!fs.existsSync(dist)) {
 }
 
 module.exports = {
-    entry: path.resolve(__dirname, 'lib/index.js'),
-    external: Object.keys(dependencies),
-    moduleName: name,
+    input: path.resolve(__dirname, 'src/index.js'),
+    output: {
+        file: 'dist/clippy.js',
+        format: 'umd',       // node and browsers
+        name: 'clippy'
+    },
     plugins: [
-        buble(),
+        //buble(),
         resolve({ external: ['vue'] }),
         commonjs(),
-        // uglify({}, minify)
+        copy({
+            assets: [
+                'assets',
+            ],
+        }),    
     ],
-    globals: {
-        jquery: '$'
-    },
-    targets: [
-        {
-            format: 'umd',
-            moduleName: name,
-            dest: path.resolve(dist, name + '.js'),
-            sourceMap: true
-        },
-        {
-            format: 'es',
-            dest: path.resolve(dist, name + '.esm.js'),
-            sourceMap: true
-        }
-    ]
 };

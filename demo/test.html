@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<link rel="stylesheet" type="text/css" href="../assets/clippy.css">
+		<link rel="stylesheet" type="text/css" href="../dist/assets/clippy.css">
 		
 		<style>
 
@@ -20,7 +20,7 @@
 
 		<script type="text/javascript">
 
-			clippy.load(
+			new clippy.load(
 				'Clippy', 
 				function(agent){
 					window.agent = agent;
@@ -38,12 +38,11 @@
 
 
 					$('.clippy').on('click', (event) => {
+						agent.stop();
 						agent.speak("Unhand me you foul beast!");
 						agent.animate();
 					});
-				},
-				null, 
-	        	'../assets/agents/'
+				}
 	        );
 
 		</script>

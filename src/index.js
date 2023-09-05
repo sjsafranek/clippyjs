@@ -17,10 +17,10 @@ const clippy = {
 // List of available agents
 clippy.agents = ['Bonzi', 'Clippy', 'F1', 'Genie', 'Genius', 'Links', 'Merlin', 'Peedy', 'Rocky', 'Rover'];
 
-export default clippy
+export default clippy;
 
 if (typeof window !== 'undefined') {
-    window.clippy = clippy
+    window.clippy = clippy;
 }
 
 
