@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="assets/clippy.css">
+		
+		<style>
+
+			html, body {
+				margin: 0;
+				height: 100%;
+			}
+
+		</style>
+
+	</head>
+	<body>
+
+		<script src="https://unpkg.com/jquery@3.2.1"></script>
+		<script src="dist/clippy.js"></script>
+
+		<script type="text/javascript">
+
+			clippy.load('Clippy', function(agent){
+				window.agent = agent;
+
+				agent.show();
+
+
+				//.BEGIN Track mouse movement
+				$('body').on('mousemove', (event) => {
+					if (0 == agent._queue._queue.length) {
+						agent.gestureAt(event.clientX, event.clientY);
+					}
+				});
+				//.END Track mouse movement
+
+
+				$('.clippy').on('click', (event) => {
+					agent.speak("Unhand me you foul beast!");
+				});
+
+			});
+
+		</script>
+
+	</body>
+</html>
