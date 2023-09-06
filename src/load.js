@@ -1,124 +1,107 @@
 import $ from 'jquery'
 import Agent from './agent'
+import DOMUtils from './utils';
 
-export class load {
+export class loader {
 
-    constructor (name, onSuccess, onFail, base_path) {
-        //base_path = base_path || window.CLIPPY_CDN || 'https://gitcdn.xyz/repo/pi0/clippyjs/master/assets/agents/';
-        //base_path = "assets/agents/";
+    static load (name, base_path) {
         base_path = base_path || '../dist/assets/agents/';
-
         let path = base_path + name;
-        let mapDfd = load._loadMap(path);
-        let agentDfd = load._loadAgent(name, path);
-        let soundsDfd = load._loadSounds(name, path);
-
-        let data;
-        agentDfd.done(function (d) {
-            data = d;
-        });
-
-        let sounds;
-
-        soundsDfd.done(function (d) {
-            sounds = d;
-        });
-
-        // wrapper to the success callback
-        let _onSuccess = function () {
-            let a = new Agent(path, data, sounds);
-            onSuccess(a);
-        };
-
-        $.when(mapDfd, agentDfd, soundsDfd).done(_onSuccess).fail(onFail);
+        return loader._loadAgent(name, path)
+            .then(result => {
+                let agent = new Agent(path, result.data, result.sounds);
+                return agent;
+            });
     }
 
-    static _loadMap (path) {
-        let dfd = load._maps[path];
-        if (dfd) return dfd;
+    static _loadAgent(name, path) {
+        return Promise.all([
+            loader._loadImage(path),
+            loader._loadData(name, path),
+            loader._loadSounds(name, path)
+        ])
+        .then(results => {
+            return {
+                name: name,
+                data: results[1],
+                sounds: results[2]
+            }
+        });
+    }
 
-        // set dfd if not defined
-        dfd = load._maps[path] = $.Deferred();
+    static _loadImage (path) {
+        let task = loader._maps[path];
+        if (task) return task;
+
+        // set task if not defined
+        task = loader._maps[path] = $.Deferred();
 
         let src = path + '/map.png';
-        let img = new Image();
+        DOMUtils.createImage(src, {onload: task.resolve, onerror: task.reject});
 
-        img.onload = dfd.resolve;
-        img.onerror = dfd.reject;
-
-        // start loading the map;
-        img.setAttribute('src', src);
-
-        return dfd.promise();
+        return task.promise();
     }
 
     static _loadSounds (name, path) {
-        let dfd = load._sounds[name];
-        if (dfd) return dfd;
+        let task = loader._sounds[name];
+        if (task) return task;
 
-        // set dfd if not defined
-        dfd = load._sounds[name] = $.Deferred();
+        // set task if not defined
+        task = loader._sounds[name] = $.Deferred();
 
         let audio = document.createElement('audio');
         let canPlayMp3 = !!audio.canPlayType && "" !== audio.canPlayType('audio/mpeg');
         let canPlayOgg = !!audio.canPlayType && "" !== audio.canPlayType('audio/ogg; codecs="vorbis"');
 
         if (!canPlayMp3 && !canPlayOgg) {
-            dfd.resolve({});
+            task.resolve({});
         } else {
             let src = path + (canPlayMp3 ? '/sounds-mp3.js' : '/sounds-ogg.js');
-            // load
-            load._loadScript(src);
+            DOMUtils.loadScript(src, {onload: task.resolve, onerror: task.reject});
         }
 
-        return dfd.promise()
+        return task.promise()
     }
 
-    static _loadAgent (name, path) {
-        let dfd = load._data[name];
-        if (dfd) return dfd;
+    static _loadData (name, path) {
+        let task = loader._data[name];
+        if (task) return task;
 
-        dfd = load._getAgentDfd(name);
+        task = loader._getDataTask(name);
 
         let src = path + '/agent.js';
+        DOMUtils.loadScript(src, {onload: task.resolve, onerror: task.reject});
 
-        load._loadScript(src);
-
-        return dfd.promise();
+        return task.promise();
     }
 
-    static _loadScript (src) {
-        let script = document.createElement('script');
-        script.setAttribute('src', src);
-        script.setAttribute('async', 'async');
-        script.setAttribute('type', 'text/javascript');
-
-        document.head.appendChild(script);
-    }
-
-    static _getAgentDfd (name) {
-        let dfd = load._data[name];
-        if (!dfd) {
-            dfd = load._data[name] = $.Deferred();
+    static _getDataTask (name) {
+        let task = loader._data[name];
+        if (!task) {
+            task = loader._data[name] = $.Deferred();
         }
-        return dfd;
+        return task;
+    }
+
+    static _getSoundTask (name) {
+        let task = loader._sounds[name];
+        if (!task) {
+            task = loader._sounds[name] = $.Deferred();
+        }
+        return task;
     }
 }
 
-load._maps = {};
-load._sounds = {};
-load._data = {};
+loader._maps = {};
+loader._sounds = {};
+loader._data = {};
 
 export function ready (name, data) {
-    let dfd = load._getAgentDfd(name);
-    dfd.resolve(data);
+    let task = loader._getDataTask(name);
+    task.resolve(data);
 }
 
 export function soundsReady (name, data) {
-    let dfd = load._sounds[name];
-    if (!dfd) {
-        dfd = load._sounds[name] = $.Deferred();
-    }
-
-    dfd.resolve(data);
+    let task = loader._getSoundTask(name);
+    task.resolve(data);
 }

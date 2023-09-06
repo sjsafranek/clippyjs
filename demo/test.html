@@ -20,9 +20,8 @@
 
 		<script type="text/javascript">
 
-			new clippy.load(
-				'Clippy', 
-				function(agent){
+			clippy.load('Clippy')
+				.then(function(agent){
 					window.agent = agent;
 
 					agent.show();
@@ -42,8 +41,7 @@
 						agent.speak("Unhand me you foul beast!");
 						agent.animate();
 					});
-				}
-	        );
+				});
 
 		</script>
 
