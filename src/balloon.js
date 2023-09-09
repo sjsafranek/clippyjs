@@ -1,22 +1,20 @@
 import $ from 'jquery'
 
 export default class Balloon {
-    constructor (targetEl) {
-        this._targetEl = targetEl;
 
+    constructor ($target) {
+        this.$target = $target;
         this._hidden = true;
         this._setup();
         this.WORD_SPEAK_TIME = 200;
         this.CLOSE_BALLOON_DELAY = 2000;
-        this._BALLOON_MARGIN = 15;
+        this.BALLOON_MARGIN = 15;
     }
 
     _setup () {
-
-        this._balloon = $('<div class="clippy-balloon"><div class="clippy-tip"></div><div class="clippy-content"></div></div> ').hide();
-        this._content = this._balloon.find('.clippy-content');
-
-        $(document.body).append(this._balloon);
+        this.$balloon = $('<div class="clippy-balloon"><div class="clippy-tip"></div><div class="clippy-content"></div></div> ').hide();
+        this.$content = this.$balloon.find('.clippy-content');
+        $(document.body).append(this.$balloon);
     }
 
     reposition () {
@@ -35,52 +33,52 @@ export default class Balloon {
      * @private
      */
     _position (side) {
-        let o = this._targetEl.offset();
-        let h = this._targetEl.height();
-        let w = this._targetEl.width();
+        let o = this.$target.offset();
+        let h = this.$target.height();
+        let w = this.$target.width();
         o.top -= $(window).scrollTop();
         o.left -= $(window).scrollLeft();
 
-        let bH = this._balloon.outerHeight();
-        let bW = this._balloon.outerWidth();
+        let bH = this.$balloon.outerHeight();
+        let bW = this.$balloon.outerWidth();
 
-        this._balloon.removeClass('clippy-top-left');
-        this._balloon.removeClass('clippy-top-right');
-        this._balloon.removeClass('clippy-bottom-right');
-        this._balloon.removeClass('clippy-bottom-left');
+        this.$balloon.removeClass('clippy-top-left');
+        this.$balloon.removeClass('clippy-top-right');
+        this.$balloon.removeClass('clippy-bottom-right');
+        this.$balloon.removeClass('clippy-bottom-left');
 
         let left, top;
         switch (side) {
             case 'top-left':
                 // right side of the balloon next to the right side of the agent
                 left = o.left + w - bW;
-                top = o.top - bH - this._BALLOON_MARGIN;
+                top = o.top - bH - this.BALLOON_MARGIN;
                 break;
             case 'top-right':
                 // left side of the balloon next to the left side of the agent
                 left = o.left;
-                top = o.top - bH - this._BALLOON_MARGIN;
+                top = o.top - bH - this.BALLOON_MARGIN;
                 break;
             case 'bottom-right':
                 // right side of the balloon next to the right side of the agent
                 left = o.left;
-                top = o.top + h + this._BALLOON_MARGIN;
+                top = o.top + h + this.BALLOON_MARGIN;
                 break;
             case 'bottom-left':
                 // left side of the balloon next to the left side of the agent
                 left = o.left + w - bW;
-                top = o.top + h + this._BALLOON_MARGIN;
+                top = o.top + h + this.BALLOON_MARGIN;
                 break;
         }
 
-        this._balloon.css({ top: top, left: left });
-        this._balloon.addClass('clippy-' + side);
+        this.$balloon.css({ top: top, left: left });
+        this.$balloon.addClass('clippy-' + side);
     }
 
     _isOut () {
-        let o = this._balloon.offset();
-        let bH = this._balloon.outerHeight();
-        let bW = this._balloon.outerWidth();
+        let o = this.$balloon.offset();
+        let bH = this.$balloon.outerHeight();
+        let bW = this.$balloon.outerWidth();
 
         let wW = $(window).width();
         let wH = $(window).height();
@@ -97,30 +95,26 @@ export default class Balloon {
     speak (complete, text, hold) {
         this._hidden = false;
         this.show();
-        let c = this._content;
-        // set height to auto
-        c.height('auto');
-        c.width('auto');
-        // add the text
-        c.text(text);
-        // set height
-        c.height(c.height());
-        c.width(c.width());
-        c.text('');
+        this.$content
+            .height('auto')
+            .width('auto')
+            .text(text)
+            .height(this.$content.height())
+            .width(this.$content.width())
+            .text('');
         this.reposition();
-
         this._complete = complete;
         this._sayWords(text, hold, complete);
     }
 
     show () {
         if (this._hidden) return;
-        this._balloon.show();
+        this.$balloon.show();
     }
 
     hide (fast) {
         if (fast) {
-            this._balloon.hide();
+            this.$balloon.hide();
             return;
         }
 
@@ -129,7 +123,7 @@ export default class Balloon {
 
     _finishHideBalloon () {
         if (this._active) return;
-        this._balloon.hide();
+        this.$balloon.hide();
         this._hidden = true;
         this._hiding = null;
     }
@@ -139,9 +133,8 @@ export default class Balloon {
         this._hold = hold;
         let words = text.split(/[^\S-]/);
         let time = this.WORD_SPEAK_TIME;
-        let el = this._content;
+        let el = this.$content;
         let idx = 1;
-
 
         this._addWord = $.proxy(function () {
             if (!this._active) return;

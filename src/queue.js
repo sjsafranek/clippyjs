@@ -1,6 +1,7 @@
 import $ from 'jquery'
 
 export default class Queue {
+    
     constructor (onEmptyCallback) {
         this._queue = [];
         this._onEmptyCallback = onEmptyCallback;
@@ -26,7 +27,7 @@ export default class Queue {
     _progressQueue () {
         // stop if nothing left in queue
         if (!this._queue.length) {
-            this._onEmptyCallback();
+            this._onEmptyCallback && this._onEmptyCallback();
             return;
         }
 

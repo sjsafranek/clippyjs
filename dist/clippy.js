@@ -10705,6 +10705,7 @@
 	var $ = /*@__PURE__*/getDefaultExportFromCjs(jqueryExports);
 
 	class Queue {
+	    
 	    constructor (onEmptyCallback) {
 	        this._queue = [];
 	        this._onEmptyCallback = onEmptyCallback;
@@ -10730,7 +10731,7 @@
 	    _progressQueue () {
 	        // stop if nothing left in queue
 	        if (!this._queue.length) {
-	            this._onEmptyCallback();
+	            this._onEmptyCallback && this._onEmptyCallback();
 	            return;
 	        }
 
@@ -10882,7 +10883,6 @@
 	        return this._currentFrameIndex + 1;
 	    }
 
-
 	    _playSound () {
 	        let s = this._currentFrame.sound;
 	        if (!s) return;
@@ -10893,7 +10893,6 @@
 	    _atLastFrame () {
 	        return this._currentFrameIndex >= this._currentAnimation.frames.length - 1;
 	    }
-
 
 	    _step () {
 	        if (!this._currentAnimation) return;
@@ -10942,22 +10941,20 @@
 	Animator.States = { WAITING: 1, EXITED: 0 };
 
 	class Balloon {
-	    constructor (targetEl) {
-	        this._targetEl = targetEl;
 
+	    constructor ($target) {
+	        this.$target = $target;
 	        this._hidden = true;
 	        this._setup();
 	        this.WORD_SPEAK_TIME = 200;
 	        this.CLOSE_BALLOON_DELAY = 2000;
-	        this._BALLOON_MARGIN = 15;
+	        this.BALLOON_MARGIN = 15;
 	    }
 
 	    _setup () {
-
-	        this._balloon = $('<div class="clippy-balloon"><div class="clippy-tip"></div><div class="clippy-content"></div></div> ').hide();
-	        this._content = this._balloon.find('.clippy-content');
-
-	        $(document.body).append(this._balloon);
+	        this.$balloon = $('<div class="clippy-balloon"><div class="clippy-tip"></div><div class="clippy-content"></div></div> ').hide();
+	        this.$content = this.$balloon.find('.clippy-content');
+	        $(document.body).append(this.$balloon);
 	    }
 
 	    reposition () {
@@ -10976,52 +10973,52 @@
 	     * @private
 	     */
 	    _position (side) {
-	        let o = this._targetEl.offset();
-	        let h = this._targetEl.height();
-	        let w = this._targetEl.width();
+	        let o = this.$target.offset();
+	        let h = this.$target.height();
+	        let w = this.$target.width();
 	        o.top -= $(window).scrollTop();
 	        o.left -= $(window).scrollLeft();
 
-	        let bH = this._balloon.outerHeight();
-	        let bW = this._balloon.outerWidth();
+	        let bH = this.$balloon.outerHeight();
+	        let bW = this.$balloon.outerWidth();
 
-	        this._balloon.removeClass('clippy-top-left');
-	        this._balloon.removeClass('clippy-top-right');
-	        this._balloon.removeClass('clippy-bottom-right');
-	        this._balloon.removeClass('clippy-bottom-left');
+	        this.$balloon.removeClass('clippy-top-left');
+	        this.$balloon.removeClass('clippy-top-right');
+	        this.$balloon.removeClass('clippy-bottom-right');
+	        this.$balloon.removeClass('clippy-bottom-left');
 
 	        let left, top;
 	        switch (side) {
 	            case 'top-left':
 	                // right side of the balloon next to the right side of the agent
 	                left = o.left + w - bW;
-	                top = o.top - bH - this._BALLOON_MARGIN;
+	                top = o.top - bH - this.BALLOON_MARGIN;
 	                break;
 	            case 'top-right':
 	                // left side of the balloon next to the left side of the agent
 	                left = o.left;
-	                top = o.top - bH - this._BALLOON_MARGIN;
+	                top = o.top - bH - this.BALLOON_MARGIN;
 	                break;
 	            case 'bottom-right':
 	                // right side of the balloon next to the right side of the agent
 	                left = o.left;
-	                top = o.top + h + this._BALLOON_MARGIN;
+	                top = o.top + h + this.BALLOON_MARGIN;
 	                break;
 	            case 'bottom-left':
 	                // left side of the balloon next to the left side of the agent
 	                left = o.left + w - bW;
-	                top = o.top + h + this._BALLOON_MARGIN;
+	                top = o.top + h + this.BALLOON_MARGIN;
 	                break;
 	        }
 
-	        this._balloon.css({ top: top, left: left });
-	        this._balloon.addClass('clippy-' + side);
+	        this.$balloon.css({ top: top, left: left });
+	        this.$balloon.addClass('clippy-' + side);
 	    }
 
 	    _isOut () {
-	        let o = this._balloon.offset();
-	        let bH = this._balloon.outerHeight();
-	        let bW = this._balloon.outerWidth();
+	        let o = this.$balloon.offset();
+	        let bH = this.$balloon.outerHeight();
+	        let bW = this.$balloon.outerWidth();
 
 	        let wW = $(window).width();
 	        let wH = $(window).height();
@@ -11038,30 +11035,26 @@
 	    speak (complete, text, hold) {
 	        this._hidden = false;
 	        this.show();
-	        let c = this._content;
-	        // set height to auto
-	        c.height('auto');
-	        c.width('auto');
-	        // add the text
-	        c.text(text);
-	        // set height
-	        c.height(c.height());
-	        c.width(c.width());
-	        c.text('');
+	        this.$content
+	            .height('auto')
+	            .width('auto')
+	            .text(text)
+	            .height(this.$content.height())
+	            .width(this.$content.width())
+	            .text('');
 	        this.reposition();
-
 	        this._complete = complete;
 	        this._sayWords(text, hold, complete);
 	    }
 
 	    show () {
 	        if (this._hidden) return;
-	        this._balloon.show();
+	        this.$balloon.show();
 	    }
 
 	    hide (fast) {
 	        if (fast) {
-	            this._balloon.hide();
+	            this.$balloon.hide();
 	            return;
 	        }
 
@@ -11070,7 +11063,7 @@
 
 	    _finishHideBalloon () {
 	        if (this._active) return;
-	        this._balloon.hide();
+	        this.$balloon.hide();
 	        this._hidden = true;
 	        this._hiding = null;
 	    }
@@ -11080,9 +11073,8 @@
 	        this._hold = hold;
 	        let words = text.split(/[^\S-]/);
 	        let time = this.WORD_SPEAK_TIME;
-	        let el = this._content;
+	        let el = this.$content;
 	        let idx = 1;
-
 
 	        this._addWord = $.proxy(function () {
 	            if (!this._active) return;
@@ -11136,13 +11128,13 @@
 
 	        this._queue = new Queue($.proxy(this._onQueueEmpty, this));
 
-	        this._el = $('<div class="clippy"></div>').hide();
+	        this.$el = $('<div class="clippy"></div>').hide();
 
-	        $(document.body).append(this._el);
+	        $(document.body).append(this.$el);
 
-	        this._animator = new Animator(this._el, path, data, sounds);
+	        this._animator = new Animator(this.$el, path, data, sounds);
 
-	        this._balloon = new Balloon(this._el);
+	        this._balloon = new Balloon(this.$el);
 
 	        this._setupEvents();
 
@@ -11178,10 +11170,10 @@
 	     */
 	    hide (fast, callback) {
 	        this._hidden = true;
-	        let el = this._el;
+	        let $el = this.$el;
 	        this.stop();
 	        if (fast) {
-	            this._el.hide();
+	            this.$el.hide();
 	            this.stop();
 	            this.pause();
 	            if (callback) callback();
@@ -11189,7 +11181,7 @@
 	        }
 
 	        return this._playInternal('Hide', function () {
-	            el.hide();
+	            $el.hide();
 	            this.pause();
 	            if (callback) callback();
 	        })
@@ -11204,7 +11196,7 @@
 	        this._addToQueue(function (complete) {
 	            // the simple case
 	            if (duration === 0) {
-	                this._el.css({ top: y, left: x });
+	                this.$el.css({ top: y, left: x });
 	                this.reposition();
 	                complete();
 	                return;
@@ -11212,7 +11204,7 @@
 
 	            // no animations
 	            if (!this.hasAnimation(anim)) {
-	                this._el.animate({ top: y, left: x }, duration, complete);
+	                this.$el.animate({ top: y, left: x }, duration, complete);
 	                return;
 	            }
 
@@ -11223,7 +11215,7 @@
 	                }
 	                // if waiting,
 	                if (state === Animator.States.WAITING) {
-	                    this._el.animate({ top: y, left: x }, duration, $.proxy(function () {
+	                    this.$el.animate({ top: y, left: x }, duration, $.proxy(function () {
 	                        // after we're done with the movement, do the exit animation
 	                        this._animator.exitAnimation();
 	                    }, this));
@@ -11287,16 +11279,16 @@
 
 	        this._hidden = false;
 	        if (fast) {
-	            this._el.show();
+	            this.$el.show();
 	            this.resume();
 	            this._onQueueEmpty();
 	            return;
 	        }
 
-	        if (this._el.css('top') === 'auto' || !this._el.css('left') === 'auto') {
+	        if (this.$el.css('top') === 'auto' || !this.$el.css('left') === 'auto') {
 	            let left = $(window).width() * 0.8;
 	            let top = ($(window).height() + $(document).scrollTop()) * 0.8;
-	            this._el.css({ top: top, left: left });
+	            this.$el.css({ top: top, left: left });
 	        }
 
 	        this.resume();
@@ -11388,9 +11380,9 @@
 	     * @private
 	     */
 	    _getDirection (x, y) {
-	        let offset = this._el.offset();
-	        let h = this._el.height();
-	        let w = this._el.width();
+	        let offset = this.$el.offset();
+	        let h = this.$el.height();
+	        let w = this.$el.width();
 
 	        let centerX = (offset.left + w / 2);
 	        let centerY = (offset.top + h / 2);
@@ -11467,10 +11459,8 @@
 
 	    _setupEvents () {
 	        $(window).on('resize', $.proxy(this.reposition, this));
-
-	        this._el.on('mousedown', $.proxy(this._onMouseDown, this));
-
-	        this._el.on('dblclick', $.proxy(this._onDoubleClick, this));
+	        this.$el.on('mousedown', $.proxy(this._onMouseDown, this));
+	        this.$el.on('dblclick', $.proxy(this._onDoubleClick, this));
 	    }
 
 	    _onDoubleClick () {
@@ -11480,10 +11470,10 @@
 	    }
 
 	    reposition () {
-	        if (!this._el.is(':visible')) return;
-	        let o = this._el.offset();
-	        let bH = this._el.outerHeight();
-	        let bW = this._el.outerWidth();
+	        if (!this.$el.is(':visible')) return;
+	        let o = this.$el.offset();
+	        let bH = this.$el.outerHeight();
+	        let bW = this.$el.outerWidth();
 
 	        let wW = $(window).width();
 	        let wH = $(window).height();
@@ -11496,7 +11486,7 @@
 	        if (top - m < 0) {
 	            top = m;
 	        } else if ((top + bH + m) > wH) {
-	            top = wH - bH - m;
+	            top = wH - bH - m; 
 	        }
 
 	        if (left - m < 0) {
@@ -11505,24 +11495,24 @@
 	            left = wW - bW - m;
 	        }
 
-	        this._el.css({ left: left, top: top });
+	        this.$el.css({ left: left, top: top });
 	        // reposition balloon
 	        this._balloon.reposition();
 	    }
 
-	    _onMouseDown (e) {
-	        e.preventDefault();
-	        this._startDrag(e);
+	    _onMouseDown (event) {
+	        event.preventDefault();
+	        this._startDrag(event);
 	    }
 
 
 	    /**************************** Drag ************************************/
 
-	    _startDrag (e) {
+	    _startDrag (event) {
 	        // pause animations
 	        this.pause();
 	        this._balloon.hide(true);
-	        this._offset = this._calculateClickOffset(e);
+	        this._offset = this._calculateClickOffset(event);
 
 	        this._moveHandle = $.proxy(this._dragMove, this);
 	        this._upHandle = $.proxy(this._finishDrag, this);
@@ -11533,28 +11523,26 @@
 	        this._dragUpdateLoop = window.setTimeout($.proxy(this._updateLocation, this), 10);
 	    }
 
-	    _calculateClickOffset (e) {
-	        let mouseX = e.pageX;
-	        let mouseY = e.pageY;
-	        let o = this._el.offset();
+	    _calculateClickOffset (event) {
+	        let offset = this.$el.offset();
 	        return {
-	            top: mouseY - o.top,
-	            left: mouseX - o.left
+	            top: event.pageY - offset.top,
+	            left: event.pageX - offset.left
 	        }
-
 	    }
 
 	    _updateLocation () {
-	        this._el.css({ top: this._targetY, left: this._targetX });
+	        this.$el.css({ 
+	            top: this._targetY, 
+	            left: this._targetX 
+	        });
 	        this._dragUpdateLoop = window.setTimeout($.proxy(this._updateLocation, this), 10);
 	    }
 
-	    _dragMove (e) {
-	        e.preventDefault();
-	        let x = e.clientX - this._offset.left;
-	        let y = e.clientY - this._offset.top;
-	        this._targetX = x;
-	        this._targetY = y;
+	    _dragMove (event) {
+	        event.preventDefault();
+	        this._targetX = event.clientX - this._offset.left;
+	        this._targetY = event.clientY - this._offset.top;
 	    }
 
 	    _finishDrag () {
@@ -11566,7 +11554,6 @@
 	        this._balloon.show();
 	        this.reposition();
 	        this.resume();
-
 	    }
 
 	    _addToQueue (func, scope) {
@@ -11579,7 +11566,6 @@
 	    pause () {
 	        this._animator.pause();
 	        this._balloon.pause();
-
 	    }
 
 	    resume () {
@@ -11744,8 +11730,8 @@
 	clippy.agents = ['Bonzi', 'Clippy', 'F1', 'Genie', 'Genius', 'Links', 'Merlin', 'Peedy', 'Rocky', 'Rover'];
 
 	// Load Agent
-	clippy.load = function(name) {
-	    return loader.load(name);
+	clippy.load = function(name, base_path) {
+	    return loader.load(name, base_path);
 	};
 
 	if (typeof window !== 'undefined') {

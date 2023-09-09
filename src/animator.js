@@ -130,7 +130,6 @@ export default class Animator {
         return this._currentFrameIndex + 1;
     }
 
-
     _playSound () {
         let s = this._currentFrame.sound;
         if (!s) return;
@@ -141,7 +140,6 @@ export default class Animator {
     _atLastFrame () {
         return this._currentFrameIndex >= this._currentAnimation.frames.length - 1;
     }
-
 
     _step () {
         if (!this._currentAnimation) return;

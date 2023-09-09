@@ -17,8 +17,8 @@ const clippy = {
 clippy.agents = ['Bonzi', 'Clippy', 'F1', 'Genie', 'Genius', 'Links', 'Merlin', 'Peedy', 'Rocky', 'Rover'];
 
 // Load Agent
-clippy.load = function(name) {
-    return loader.load(name);
+clippy.load = function(name, base_path) {
+    return loader.load(name, base_path);
 }
 
 export default clippy;
